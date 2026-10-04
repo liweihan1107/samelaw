@@ -1,0 +1,328 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Does Geometry Enter Generated Motion?</title>
+<meta name="description" content="Under a fixed physical law, the visible geometry of a scene determines how motion must change. We fix the law and the initial state, change only the geometry drawn in the first frame, and compare each generated trajectory with the simulator prediction for that geometry.">
+<meta name="author" content="Weihan Li, Junhao Wu, Yuhan Song, Xiaofeng Lin, Xinlei Chen">
+<link rel="canonical" href="https://liweihan1107.github.io/samelaw/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="How Does Geometry Enter Generated Motion?">
+<meta property="og:url" content="https://liweihan1107.github.io/samelaw/">
+<meta property="og:title" content="How Does Geometry Enter Generated Motion?">
+<meta property="og:description" content="Under a fixed physical law, the visible geometry of a scene determines how motion must change. We fix the law and the initial state, change only the geometry drawn in the first frame, and compare each generated trajectory with the simulator prediction for that geometry.">
+<meta property="og:image" content="https://liweihan1107.github.io/samelaw/assets/img/card.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A ball released on a track with a barrier above its release height: the simulator turns it back, a video model carries it over.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How Does Geometry Enter Generated Motion?">
+<meta name="twitter:description" content="Under a fixed physical law, the visible geometry of a scene determines how motion must change. We fix the law and the initial state, change only the geometry drawn in the first frame, and compare each generated trajectory with the simulator prediction for that geometry.">
+<meta name="twitter:image" content="https://liweihan1107.github.io/samelaw/assets/img/card.jpg">
+<meta name="twitter:image:alt" content="A ball released on a track with a barrier above its release height: the simulator turns it back, a video model carries it over.">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="assets/img/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/palette.css">
+<link rel="stylesheet" href="assets/css/site.css">
+<script type="application/json" id="copy-ui">{"physics": "Simulator", "generated": "Generated", "composed": "the first frame's ball moved along the simulator's trajectory", "rendered": "rendered", "rendered_extended": "rendered to 5 s, then moved along the trajectory on the rendered board", "seed": "seed", "generation": "generation", "play": "Play", "pause": "Pause", "playback": "Playback of both videos", "position": "Position in the clip", "time_abs": "{t} s", "time_norm": "t/T {f}", "paths": "Paths", "slow": "Half speed", "rate": "played at {rate}×", "release": "release height", "no_video": "no video", "not_run": "not run for this model", "not_run_short": "not run", "unread": "not trackable", "outcome": {"passed": "crosses the barrier", "turned": "turns back", "stalled": "stops on the rise", "short": "does not reach the barrier", "end_stop": "runs to the top of the ramp", "climbing": "still climbing when the clip ends", "tray": "ends in the tray", "not in tray": "ends outside the tray", "arrived": "reaches the end of the track", "not arrived": "does not reach the end in this clip", "reached end": "reaches the end of the track", "follows source": "follows the source", "own i2v version": "becomes its own image-to-video version"}, "barrier": {"physics_pass": "crosses the barrier", "physics_turn": "turns back below the top", "counts": "Crosses the higher barrier in {x} of {n} seeds, the lower in {y} of {m}.", "crest": "keeps {r} of its speed over the top"}, "ramp": {"physics": "turns back at {r} of the release height", "model": "rises to {r} of the release height", "counts": "Above the release height in {x} of {n} trackable videos of this model at this angle."}, "locality": {"physics_base": "the unedited track", "physics_edit": "the speed at the edit changes by {p}%", "physics_null": "an edit off the track: the motion is unchanged", "model_edit": "speed at the edit {p}% against the unedited track", "model_base": "the unedited track, same seed", "model_base_closed": "the unedited track, same generation index", "model_null": "the same seed with an edit off the track", "reach": "reaches the edit at {t} s (simulator {tp} s)"}, "composition": {"physics": "contacts {order}", "model": "contacts {order}", "none": "no contact resolved", "exact": "the physical order", "not_exact": "not the physical order", "counts": "The physical order appears in {x} of {n} of this model's three-deflector videos."}, "prompt": {"physics": "the same motion under both prompts", "counts": "Ends in the tray in {a} of {n} trackable videos with the outcome named, {b} of {m} with the neutral prompt."}, "length": {"physics": "reaches the end of the track at {t} s, {p}% of this clip", "model": "reaches the end of the track at {p}% of the clip", "not_reached": "does not reach the end in this clip", "marker_physics": "simulator arrival", "marker_model": "generated arrival"}, "photo": {"physics": "the simulator on the geometry measured from the photograph", "physics_nominal": "the simulator on the nominal geometry", "gain": "gain at 3 cycles per metre {x}", "residual": "first exit off the physical direction by {x}°"}, "regen": {"model": "moves {k} of the way toward its own image-to-video output and {l} toward physics", "counts": "{own} of {n} regenerations at this level become the model's own version."}, "gallery_level": "{family}, {level}"}</script>
+<script type="application/json" id="copy-locality-options">{"base": "unedited", "bump": "bump", "dip": "dip", "null": "off the track"}</script>
+<script defer src="assets/js/site.js"></script>
+</head>
+<body>
+<a class="skip" href="#explainer">Skip to the explainer</a>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow"><span class="pill pill-quiet"><em>Same law, different geometry</em></span></p>
+    <h1>How Does Geometry Enter Generated Motion?</h1>
+    <p class="authors"><span class="author">Weihan Li<sup>1</sup></span>, <span class="author">Junhao Wu<sup>2</sup></span>, <span class="author">Yuhan Song<sup>1</sup></span>, <span class="author">Xiaofeng Lin<sup>1</sup></span>, <span class="author">Xinlei Chen<sup>3</sup></span></p>
+    <p class="affiliations"><span class="aff"><sup>1</sup>The University of Tokyo</span><span class="aff-sep" aria-hidden="true"> &middot; </span><span class="aff"><sup>2</sup>RWTH Aachen University</span><span class="aff-sep" aria-hidden="true"> &middot; </span><span class="aff"><sup>3</sup>Harbin Institute of Technology, Shenzhen</span></p>
+
+    <nav class="links" aria-label="Paper and code"><span class="btn btn-link is-inert" aria-disabled="true"><span class="btn-icon" aria-hidden="true">&#9636;</span>Paper</span><span class="btn btn-link is-inert" aria-disabled="true"><span class="btn-icon" aria-hidden="true">&#8599;</span>arXiv</span><span class="btn btn-link is-inert" aria-disabled="true"><span class="btn-icon" aria-hidden="true">&lt;/&gt;</span>Code (coming soon)</span></nav>
+    <div class="summary"><p>Under a fixed physical law, the visible geometry of a scene determines how motion must change. We ask how video generators realize this relationship. We fix the law and the initial state and change only the geometry drawn in the first frame, within matched families of tracks and deflectors, and compare each generated trajectory with the simulator prediction for that geometry. Paired interventions change one thing at a time: a local bump, the height of a barrier, the words of the prompt, the length of the clip.</p><p>Across nine image-to-video models, geometry is preserved and shapes the motion: the speed of the ball follows the drawn undulation of a track. A physical state would carry this response forward, and here the generated motion parts from the law. The mean slope barely accelerates the ball, successive contacts fail to compose through a consistent state, an edit ahead of the ball alters its motion before it arrives, and the ball climbs over barriers higher than its release point. Two global conditions organize the global trajectory: text strongly controls the destination, while clip length strongly controls timing in the open-weight models tested. The pattern persists with photographed first frames. Current video generation thus behaves as geometry-conditioned motion synthesis whose evolution of state differs systematically from that of a fixed physical law.</p></div>
+    <ol class="spine" aria-label="The paper in four readings">
+      <li><a class="tag tag-response" href="#response">response</a></li>
+      <li aria-hidden="true" class="spine-arrow">&rarr;</li>
+      <li><a class="tag tag-state" href="#state">state</a></li>
+      <li aria-hidden="true" class="spine-arrow">&rarr;</li>
+      <li><a class="tag tag-goal" href="#goal">goal</a></li>
+      <li aria-hidden="true" class="spine-arrow">&rarr;</li>
+      <li><a class="tag tag-time" href="#time">time</a></li>
+    </ol>
+  </div>
+</header>
+
+<main>
+<section id="explainer" class="section explainer" aria-label="The question, in six steps">
+  <div class="wrap wide">
+    <div class="card ex-card" data-explainer tabindex="-1">
+      <div class="stage" data-stage data-physics-label="Simulator" data-model-label="Video model"></div>
+      <div class="controls ex-controls">
+        <div class="switch" role="radiogroup" aria-label="Barrier" data-switch hidden>
+          <span class="switch-label">Barrier</span>
+          <button type="button" role="radio" data-value="low">0.70 of the release height</button>
+          <button type="button" role="radio" data-value="high">1.20 of the release height</button>
+        </div>
+      </div>
+      <div class="ex-steps" data-steps>
+        <article class="ex-step" data-step="0"><h3>One frame fixes a world</h3><p>A world is a triple <span class="math"><i>W</i><span class="rel">=</span>(&Omega;,<span class="sep"></span><i>L</i>,<span class="sep"></span><i>x</i><sub>0</sub>)</span> of visible geometry, local law and initial state. The first frame shows the geometry and the initial state: a white track with a barrier in its middle, and a ball at rest near the top. The law, gravity with rolling contact, is the same for every geometry of the family.</p></article>
+        <article class="ex-step" data-step="1"><h3>The simulator gives the motion the law requires</h3><p>A simulator integrates the law on the drawn geometry, and a 64-member ensemble over material parameters and the starting point gives a tolerance band. Here the barrier is 0.70 of the release height, and the ball rolls over it to the end of the track.</p></article>
+        <article class="ex-step" data-step="2"><h3>Change only the geometry</h3><p>Keep the law and the initial state and raise the barrier to 1.20 of the release height. The same law now turns the ball back before the top. Each piece of geometry acts when the ball reaches it, and what it does depends on the speed and direction the ball brings. Use the switch to go back and forth.</p></article>
+        <article class="ex-step" data-step="3"><h3>Give the same frame to a video model</h3><p>The first frame goes to an image-to-video model with a prompt that is identical for every geometry of the family, so the barrier reaches the model only through the image. The generated clip plays in step with the simulator.</p></article>
+        <article class="ex-step" data-step="4"><h3>Read the motion against physics</h3><p>We track the ball into the coordinates of the board. The blue dashed line marks the release height, the white dashed line is the simulator's path and the coloured trace the generated ball; each trace runs from faint to full as time passes. MiniMax-H3 crosses both barriers, as it does with every seed. Across the models, 43 of 49 physically impassable crossings are made.</p></article>
+        <article class="ex-step" data-step="5"><h3>Four readings, each a switch</h3><p><a href="#response">Response</a>: geometry is preserved and shapes the motion. <a href="#state">State</a>: a physical state would carry this response forward, and here the generated motion parts from the law. <a href="#goal">Goal</a>: the outcome named in the prompt controls the destination. <a href="#time">Time</a>: clip length controls the timing in the open-weight models tested. Each reading below is a switch like this one.</p></article>
+      </div>
+      <div class="ex-nav">
+        <button type="button" class="btn" data-ex-prev>&lsaquo; Previous</button>
+        <div class="ex-progress">
+          <ol class="dots" data-ex-dots aria-label="Steps">
+            <li><button type="button" aria-label="Step 1"></button></li>
+            <li><button type="button" aria-label="Step 2"></button></li>
+            <li><button type="button" aria-label="Step 3"></button></li>
+            <li><button type="button" aria-label="Step 4"></button></li>
+            <li><button type="button" aria-label="Step 5"></button></li>
+            <li><button type="button" aria-label="Step 6"></button></li>
+          </ol>
+          <span class="ex-count" aria-live="polite"><span data-ex-count>1</span> / 6</span>
+        </div>
+        <button type="button" class="btn btn-primary" data-ex-next data-label-next="Next" data-label-restart="Start again">Next &rsaquo;</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="findings" class="section findings" aria-label="Findings">
+  <div class="wrap wide">
+    <p class="findings-note">Each panel keeps the law and the initial state and changes one thing between generations that share everything else, including the seed where the model allows it. The simulator and a generated video play side by side and switch together.</p>
+
+    <div id="response" class="question" data-tag="response">
+      <article class="panel card" data-panel="undulation" data-tag="response">
+        <header class="panel-head"><span class="tag tag-response">response</span><h3>The speed follows the drawn shape</h3></header>
+        <div class="panel-body">
+          <div class="panel-text"><p>In the track family, 83&ndash;100% of each model's videos are intact. In them the drawn undulation keeps its amplitude to within 1% and the ball stays on the track. On undulating tracks the speed of the generated ball rises and falls with the drawn profile. Relative to each model's own tempo, the gain at 3 cycles per metre is 0.54&ndash;1.24 of the physical one. Eight models lead the physical phase by 15&deg;&ndash;41&deg;, at least twice the floor of 6&deg;&ndash;7.5&deg;, and MiniMax-H3 responds in phase. The response repeats across seeds. The mean slope contributes little: in the generated motion the acceleration along the straight track is at most 0.65 of what the ball's own transit time implies, and below 0.3 in seven models.</p></div>
+          <div class="controls">
+            <div class="switch" role="radiogroup" aria-label="Drawn track" data-switch>
+              <span class="switch-label">Drawn track</span>
+              <button type="button" role="radio" data-value="straight">straight</button>
+              <button type="button" role="radio" data-value="single">single frequency</button>
+              <button type="button" role="radio" data-value="broadband">broadband</button>
+            </div>
+            <div class="model-picker" data-models></div>
+          </div>
+          <div class="stage" data-stage></div>
+        </div>
+      </article>
+    </div>
+
+    <div id="state" class="question" data-tag="state">
+      <div class="question-head">
+        <span class="tag tag-state">state</span>
+        <h3>Does the modulation form a local dynamics?</h3>
+        <p>A state-mediated physical dynamics makes three testable predictions here: successive events compose through the state, only geometry the ball has reached can affect it, and its evolution obeys the energy bound.</p>
+      </div>
+
+      <article class="panel card" data-panel="composition" data-tag="state">
+        <header class="panel-head"><span class="tag tag-state">state &middot; composition</span><h3>Successive contacts fail to compose</h3></header>
+        <div class="panel-body">
+          <div class="panel-text"><p>With three deflectors the simulator's ensemble keeps a single order of contacts. The closed models reproduce it in 12&ndash;24% of their videos and the open-weight models in none. In MiniMax-H3, Wan&nbsp;2.2 and Cosmos&nbsp;3 Nano the ball seldom reaches a second contact: it slides off the first deflector and drops. In the two Seedance models the exit direction is off by 19&deg;&ndash;31&deg; at the first, the second and the third contact alike, so the chain is lost through independent local deviations, and in Wan&nbsp;3.0 the deviation grows from 10&deg; to 28&deg;. A contact law calibrated on each model's single-deflector videos improves the prediction of the three-deflector scenes for one model only, so the deviations do not reduce to a consistent wrong material.</p></div>
+          <div class="controls">
+            <div class="switch" role="radiogroup" aria-label="Deflectors" data-switch>
+              <span class="switch-label">Deflectors</span>
+              <button type="button" role="radio" data-value="regular">regular</button>
+              <button type="button" role="radio" data-value="irregular">irregular</button>
+            </div>
+            <div class="model-picker" data-models></div>
+          </div>
+          <div class="stage" data-stage></div>
+        </div>
+      </article>
+
+      <article class="panel card" data-panel="locality" data-tag="state">
+        <header class="panel-head"><span class="tag tag-state">state &middot; locality</span><h3>Edits act ahead of the ball</h3></header>
+        <div class="panel-body">
+          <div class="panel-text"><p>We add a 15&nbsp;mm bump or dip to one section of a track and generate with the same seed as for the unedited track. Physics changes the speed at the edit by &minus;11% and +8% and leaves the motion before it unchanged. MiniMax-H3 slows at the bump by 2.4%, a fifth of the physical change, and reaches the edit at the unchanged time. In LTX-2.5 the ball reaches either edit 3&ndash;6% sooner and slows at the dip, where physics speeds up. In three open-weight models the path before the ball reaches the edit changes 1.7&ndash;4.0 times as much as under an edit of equal size placed off the track, beyond the seed-matched null. The shape ahead of the ball takes part in the motion from the start.</p></div>
+          <div class="controls">
+            <div class="switch" role="radiogroup" aria-label="Edit" data-switch>
+              <span class="switch-label">Edit</span>
+              <button type="button" role="radio" data-value="base">unedited</button>
+              <button type="button" role="radio" data-value="bump">bump</button>
+              <button type="button" role="radio" data-value="dip">dip</button>
+              <button type="button" role="radio" data-value="null">off the track</button>
+            </div>
+            <div class="model-picker" data-models></div>
+          </div>
+          <div class="stage" data-stage></div>
+          <div class="chart" data-chart data-label="Edited minus unedited position along the track (mm), against where the unedited ball is (m)" data-edit="the edit"></div>
+        </div>
+      </article>
+
+      <article class="panel card" data-panel="barrier" data-tag="state">
+        <header class="panel-head"><span class="tag tag-state">state &middot; energy</span><h3>The ball crosses barriers higher than its release point</h3></header>
+        <div class="panel-body">
+          <div class="panel-text"><p>Physics passes the barriers below the release height and none above it. Six models cross every barrier they were given, and overall 43 of 49 physically impassable crossings are made. In physics the speed kept over the top falls from 0.53 of the speed at the foot to zero as the barrier rises. In the models it stays at the same level at every height, for example 0.42&ndash;0.46 in Seedance&nbsp;2.0 mini.</p></div>
+          <div class="controls">
+            <div class="switch" role="radiogroup" aria-label="Barrier height" data-switch>
+              <span class="switch-label">Barrier height</span>
+              <button type="button" role="radio" data-value="low">0.85 of the release height</button>
+              <button type="button" role="radio" data-value="high">1.20</button>
+            </div>
+            <div class="model-picker" data-models></div>
+          </div>
+          <div class="stage" data-stage></div>
+        </div>
+      </article>
+
+      <article class="panel card" data-panel="ramp" data-tag="state">
+        <header class="panel-head"><span class="tag tag-state">state &middot; energy</span><h3>The ball climbs past its release height</h3></header>
+        <div class="panel-body">
+          <div class="panel-text"><p>On a ramp pair the physical ball turns back at 0.93&ndash;0.98 of its release height. In 63 of 72 readable videos the generated ball rises above the release height, and in 37 it runs to the top of the ramp. The mean height ratio per model is 1.15&ndash;2.36. The ball slows on a rise, as the shape suggests, by an amount unrelated to the height gained.</p></div>
+          <div class="controls">
+            <div class="switch" role="radiogroup" aria-label="Up-ramp" data-switch>
+              <span class="switch-label">Up-ramp</span>
+              <button type="button" role="radio" data-value="up15">15&deg;</button>
+              <button type="button" role="radio" data-value="up30">30&deg;</button>
+              <button type="button" role="radio" data-value="up60">60&deg;</button>
+            </div>
+            <div class="model-picker" data-models></div>
+          </div>
+          <div class="stage" data-stage></div>
+          <p class="panel-note">The same 20&deg; descent and drop to the valley; only the up-ramp angle differs. The closed models were run at 15&deg; and 60&deg;.</p>
+        </div>
+      </article>
+    </div>
+
+    <div id="goal" class="question" data-tag="goal">
+      <article class="panel card" data-panel="prompt" data-tag="goal">
+        <header class="panel-head"><span class="tag tag-goal">goal</span><h3>The named outcome controls the destination</h3></header>
+        <div class="panel-body">
+          <div class="panel-text"><p>The prompt of the deflector family says that the ball bounces on the deflectors until it comes to rest in the tray. Under this prompt the ball reaches the tray in 98&ndash;100% of the trackable videos of seven models, whether or not the contacts were right. The generated motion itself leads there less often: continued by the simulator from the state in which the ball leaves its last correct contact, it reaches the tray in 11&ndash;84% of the videos of six of these models, which exceed the simulator by 16&ndash;87 percentage points. We then generate the same scenes, first frames and seeds with a prompt that describes the scene and leaves the outcome unnamed. Tray arrival falls in all eight models, by 33 to 96 points. The excess over the simulator is then at most 27 points in every model, and in MiniMax-H3 and the two Seedance models it is gone. Wan&nbsp;3.0 retains the most, with 67% arrival under the neutral prompt. The drawn tray by itself barely attracts the ball: when the tray is shifted, the landing point follows it by at most 0.42 of the shift, and with the tray removed no model brings the ball to rest where it was.</p></div>
+          <div class="controls">
+            <div class="switch" role="radiogroup" aria-label="Prompt" data-switch>
+              <span class="switch-label">Prompt</span>
+              <button type="button" role="radio" data-value="named">names the outcome</button>
+              <button type="button" role="radio" data-value="neutral">neutral</button>
+            </div>
+            <div class="model-picker" data-models></div>
+          </div>
+          <div class="prompt-box" data-prompt aria-live="polite">
+            <p class="prompt-label">Prompt given to the model</p>
+            <p class="prompt-text" data-prompt-text></p>
+          </div>
+          <div class="stage" data-stage></div>
+        </div>
+      </article>
+    </div>
+
+    <div id="time" class="question" data-tag="time">
+      <article class="panel card" data-panel="length" data-tag="time">
+        <header class="panel-head"><span class="tag tag-time">time</span><h3>Clip length controls the timing</h3></header>
+        <div class="panel-body">
+          <div class="panel-text"><p>For four open-weight models we change only the length of the clip, from 5&nbsp;s to 3 or 8&nbsp;s, with the scene, prompt and seed fixed. A physical event keeps its duration, so its tempo is independent of the clip length. The generated tempo grows with the clip length with an exponent &gamma; of 0.85&ndash;1.04 in three models, where 1 means that the event is scaled to the clip. MiniMax-H3 reaches the end of the track at 90&ndash;93% of the clip at every length, LTX-2.3 at 55&ndash;59% and the distilled LTX-2.5 at about half. Plotted against normalized time, the three motions of one seed fall on one curve. Wan&nbsp;2.2 doubles its speed at 3&nbsp;s and keeps its 5&nbsp;s pace at 8&nbsp;s.</p></div>
+          <div class="controls">
+            <div class="switch" role="radiogroup" aria-label="Clip length" data-switch>
+              <span class="switch-label">Clip length</span>
+              <button type="button" role="radio" data-value="d3">3 s</button>
+              <button type="button" role="radio" data-value="d5">5 s</button>
+              <button type="button" role="radio" data-value="d8">8 s</button>
+            </div>
+            <div class="model-picker" data-models></div>
+          </div>
+          <div class="stage" data-stage></div>
+          <div class="timeline" data-timeline data-label="normalized time t/T"></div>
+        </div>
+      </article>
+    </div>
+
+    <div id="robust" class="question" data-tag="robust">
+      <div class="question-head">
+        <span class="tag tag-quiet">photographs and regeneration</span>
+        <h3>Photographed first frames and regeneration</h3>
+      </div>
+
+      <article class="panel card" data-panel="photo" data-tag="robust">
+        <header class="panel-head"><span class="tag tag-quiet">photographed first frame</span><h3>The pattern holds on photographs</h3></header>
+        <div class="panel-body">
+          <div class="panel-text"><p>We built eight of the scenes, photographed them, measured their geometry from the photographs and ran the simulator on the measured geometry. With the photographs as first frames, the readings of six of the nine models stay within their seed-to-seed spread of the readings on renders of the same geometry. The three changes are specific: LTX-2.5 moves the camera on photographs, MiniMax-H3 shows larger exit residuals, and Seedance&nbsp;2.0 a higher gain.</p></div>
+          <div class="controls">
+            <div class="switch-group">
+              <div class="switch" role="radiogroup" aria-label="First frame" data-switch>
+                <span class="switch-label">First frame</span>
+                <button type="button" role="radio" data-value="photo">photograph</button>
+                <button type="button" role="radio" data-value="control">render</button>
+              </div>
+              <div class="switch switch-small" role="radiogroup" aria-label="Scene" data-config>
+                <span class="switch-label">Scene</span>
+                <button type="button" role="radio" data-value="F1_f3_02">track</button>
+                <button type="button" role="radio" data-value="F2_R3_02">three deflectors</button>
+              </div>
+            </div>
+            <div class="model-picker" data-models></div>
+          </div>
+          <div class="stage" data-stage></div>
+        </div>
+      </article>
+
+      <article class="panel card" data-panel="regeneration" data-tag="robust">
+        <header class="panel-head has-aside">
+          <div class="panel-title"><span class="tag tag-quiet">regeneration</span><h3>Regeneration returns the model&#x27;s own motion</h3></div>
+          <p class="panel-aside">Wan 2.2 (A14B), one source and seed at its three noise levels.</p>
+        </header>
+        <div class="panel-body">
+          <div class="panel-text"><p>We give two models a source video whose structure is intact and whose dynamics are wrong, add noise and let the model regenerate it. A motion slowed twofold keeps its tempo. A violated contact is changed: a ball that passes through a drawn deflector is made to hit it. What replaces the source is the model's own trajectory for that scene, with the order of contacts still wrong and a restitution of 0.16&ndash;0.45 in place of the prescribed 0.85. For a source with a wrong restitution, the regenerated motion of Wan&nbsp;2.2 moves 0.66 of the way toward the model's own image-to-video output of the same scene and seed, and 0.10 toward physics.</p></div>
+          <div class="controls">
+            <div class="switch" role="radiogroup" aria-label="Noise level" data-switch>
+              <span class="switch-label">Noise level</span>
+              <button type="button" role="radio" data-value="s090">0.90</button>
+              <button type="button" role="radio" data-value="s094">0.94</button>
+              <button type="button" role="radio" data-value="s095">0.95</button>
+            </div>
+            <div class="model-picker" data-models></div>
+          </div>
+          <div class="stage" data-stage data-physics-label="Source" data-physics-source="rendered with a restitution of 0.3; the law prescribes 0.85"></div>
+          <ul class="legend" data-legend>
+            <li><span class="lg lg-source" aria-hidden="true"></span>source</li>
+            <li><span class="lg lg-physics" aria-hidden="true"></span>physics</li>
+            <li><span class="lg lg-own" aria-hidden="true"></span>its own image-to-video output</li>
+            <li><span class="lg lg-regen" aria-hidden="true"></span>regenerated</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+
+    <blockquote class="closing">Taken together, current video generators use the visible geometry to shape motion locally, the text to choose its outcome, and the clip length to pace it. A fixed law prescribes a different organization: a state that is updated where the ball is, composed across events and bounded by energy. These results motivate evaluating physics through how controlled changes propagate through generated motion, beyond whether the resulting clip appears physically plausible.</blockquote>
+  </div>
+</section>
+
+<section id="gallery" class="section gallery" aria-labelledby="gallery-title">
+  <div class="wrap">
+    <h2 id="gallery-title" class="section-title">Video gallery</h2>
+    <p class="lede">Generated clips of the nine models across the families and interventions. Each card can switch to the simulator&#x27;s clip for the same first frame; for photographed first frames the simulator runs on the geometry measured from the photograph.</p>
+  </div>
+  <div class="wrap wide">
+    <div class="filters" data-filters data-label-model="Model" data-label-family="Scene family" data-label-all="All"></div>
+    <p class="g-count" data-g-count aria-live="polite"></p>
+    <div class="g-grid" data-g-grid data-label-physics="Simulator" data-label-model="Generated" data-label-nophys="no simulator clip" data-label-count="clips"></div>
+    <div class="g-more"><button type="button" class="btn" data-g-more>Show more</button></div>
+  </div>
+</section>
+
+<section id="citation" class="section citation" aria-labelledby="citation-title">
+  <div class="wrap">
+    <h2 id="citation-title" class="section-title">Citation</h2>
+    <div class="bibtex card">
+      <button type="button" class="btn btn-small" data-copy-bib data-copied="Copied">Copy</button>
+      <pre><code data-bib>@article{li2026geometry,
+  title   = {How Does Geometry Enter Generated Motion?},
+  author  = {Li, Weihan and Wu, Junhao and Song, Yuhan and Lin, Xiaofeng and Chen, Xinlei},
+  journal = {arXiv preprint},
+  year    = {2026}
+}</code></pre>
+    </div>
+  </div>
+</section>
+</main>
+<noscript><p class="noscript">The switches and videos need JavaScript; the text above reads without it.</p></noscript>
+</body>
+</html>

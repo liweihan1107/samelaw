@@ -1,0 +1,16 @@
+:root {
+  --ink: #232B3D;
+  --glacier-1: #DCE9F7; --glacier-2: #739ED4; --glacier-3: #3F72B6;
+  --icecyan-1: #D9F0F2; --icecyan-2: #61B0BC; --icecyan-3: #047C89;
+  --periwinkle-1: #E1E4FA; --periwinkle-2: #7381D2; --periwinkle-3: #343EA5;
+  --lavender-1: #ECE3F8; --lavender-2: #9E7FD0; --lavender-3: #724AB2;
+  --orchid-1: #F3E1F3; --orchid-2: #B973BA; --orchid-3: #812886;
+  --rose-1: #FBE3EE; --rose-2: #E684AF; --rose-3: #C04682;
+  --coral-1: #FDE8E6; --coral-2: #E18682; --coral-3: #AB393C;
+  --peach-1: #FDEBDD; --peach-2: #E39B73; --peach-3: #B0592A;
+  --slate-1: #EEF1F6; --slate-2: #8790A1; --slate-3: #4D566A;
+  --t-response-1: var(--glacier-1); --t-response-2: var(--glacier-2); --t-response-3: var(--glacier-3);
+  --t-state-1: var(--periwinkle-1); --t-state-2: var(--periwinkle-2); --t-state-3: var(--periwinkle-3);
+  --t-goal-1: var(--rose-1); --t-goal-2: var(--rose-2); --t-goal-3: var(--rose-3);
+  --t-time-1: var(--peach-1); --t-time-2: var(--peach-2); --t-time-3: var(--peach-3);
+}
